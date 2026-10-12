@@ -44,11 +44,18 @@ function Nav() {
           <a className={link} href="#actions">Actions</a>
           <a className={link} href="#install">Install</a>
         </div>
-        <a href={REPO} className={`${secondary} !px-3.5 !py-2`}>
-          <GitHubIcon />
-          <span className="hidden sm:inline">GitHub</span>
-          <span className="sr-only sm:hidden">GitHub repository</span>
-        </a>
+        <div className="flex items-center gap-2">
+          <a href={REPO} className={`${secondary} !px-3.5 !py-2`}>
+            <GitHubIcon />
+            <span className="hidden sm:inline">GitHub</span>
+            <span className="sr-only sm:hidden">GitHub repository</span>
+          </a>
+          <a href={DOWNLOAD} className={`${primary} !px-3.5 !py-2`}>
+            <AppleIcon />
+            <span className="hidden sm:inline">Download for macOS</span>
+            <span className="sr-only sm:hidden">Download for macOS</span>
+          </a>
+        </div>
       </nav>
     </header>
   )
