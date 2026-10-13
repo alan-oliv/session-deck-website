@@ -1,6 +1,5 @@
 import { motion } from 'motion/react'
-import { useState } from 'react'
-import { ACTIONS, DOWNLOAD, KINDS, REPO, SOURCE, UNQUARANTINE } from './data'
+import { ACTIONS, DOWNLOAD, KINDS, REPO } from './data'
 import { Reveal, rise, stagger } from './Reveal'
 
 const asset = (name: string) => `${import.meta.env.BASE_URL}${name}`
@@ -216,32 +215,6 @@ function Actions() {
   )
 }
 
-function CodeBlock({ code, label }: { code: string; label: string }) {
-  const [copied, setCopied] = useState(false)
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1600)
-    } catch {
-      /* clipboard blocked, the text is still selectable */
-    }
-  }
-  return (
-    <div className="relative rounded-xl border border-border bg-bg">
-      <pre className="overflow-x-auto p-4 pr-24 font-mono text-sm leading-relaxed text-text/90"><code>{code}</code></pre>
-      <button
-        type="button"
-        onClick={copy}
-        aria-label={`Copy ${label}`}
-        className="absolute right-3 top-3 rounded-md border border-border-strong bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition-colors duration-200 hover:text-text cursor-pointer"
-      >
-        {copied ? 'Copied' : 'Copy'}
-      </button>
-    </div>
-  )
-}
-
 function Install() {
   return (
     <section id="install" className="mx-auto max-w-6xl px-4 pb-24 sm:px-6 sm:pb-32">
@@ -257,41 +230,17 @@ function Install() {
         <p className="mt-3 text-xs text-dim">Apple Silicon · .dmg · latest release on GitHub</p>
       </Reveal>
 
-      <div className="mx-auto mt-14 grid max-w-4xl gap-4 md:grid-cols-2">
-        <Reveal className="rounded-2xl border border-border bg-surface p-6">
-          <h3 className="font-semibold">You need</h3>
-          <ul className="mt-3 space-y-2 text-sm text-muted">
-            <li>macOS on Apple Silicon</li>
-            <li>
-              <a className="underline decoration-border-strong underline-offset-4 hover:text-text" href="https://claude.com/claude-code">Claude Code</a>, with at least one session
-            </li>
-            <li>A terminal: Terminal, iTerm2, Warp or Ghostty</li>
-          </ul>
-        </Reveal>
-        <Reveal delay={0.08} className="rounded-2xl border border-border bg-surface p-6">
-          <h3 className="font-semibold">First launch</h3>
-          <p className="mt-3 text-sm leading-relaxed text-muted">
-            The build is signed but not notarized, so macOS blocks it once. Open System Settings, go to Privacy &amp; Security and click <span className="text-text">Open Anyway</span>. Or clear the flag from a terminal:
-          </p>
-          <div className="mt-3">
-            <CodeBlock code={UNQUARANTINE} label="quarantine command" />
+      <Reveal className="mx-auto mt-14 grid max-w-4xl divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface md:grid-cols-3 md:divide-x md:divide-y-0">
+        {[
+          ['Mac', 'macOS on Apple Silicon'],
+          ['Sessions', <><a className="underline decoration-border-strong underline-offset-4 hover:text-text" href="https://claude.com/claude-code">Claude Code</a>, with at least one session</>],
+          ['Terminal', 'Terminal, iTerm2, Warp or Ghostty'],
+        ].map(([label, value], i) => (
+          <div key={i} className="p-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-dim">{label}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{value}</p>
           </div>
-        </Reveal>
-      </div>
-
-      <Reveal className="mx-auto mt-4 max-w-4xl">
-        <details className="group rounded-2xl border border-border bg-surface open:bg-surface">
-          <summary className="flex cursor-pointer list-none items-center justify-between px-6 py-5 font-semibold [&::-webkit-details-marker]:hidden">
-            Build from source
-            <span className="text-dim transition-transform duration-200 group-open:rotate-180" aria-hidden="true">⌄</span>
-          </summary>
-          <div className="space-y-4 px-6 pb-6">
-            <p className="text-sm leading-relaxed text-muted">
-              Needs Node.js 22 and the Xcode Command Line Tools (<code className="font-mono text-xs text-text/90">xcode-select --install</code>) to build the blur addon. Then <code className="font-mono text-xs text-text/90">npm run package</code> produces the app in <code className="font-mono text-xs text-text/90">dist/</code>.
-            </p>
-            <CodeBlock code={SOURCE} label="build commands" />
-          </div>
-        </details>
+        ))}
       </Reveal>
     </section>
   )
