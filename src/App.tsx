@@ -1,5 +1,5 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ACTIONS, DOWNLOAD, KINDS, REPO } from './data'
 import { Reveal, rise, stagger } from './Reveal'
 
@@ -33,7 +33,7 @@ const core = 'rounded-[calc(2rem-0.375rem)] bg-surface shadow-[inset_0_1px_1px_r
 
 function PillLink({ href, primary, arrow, children, className = '' }: { href: string; primary?: boolean; arrow: string; children: ReactNode; className?: string }) {
   const look = primary
-    ? 'bg-accent text-bg hover:bg-[#4ade9f]'
+    ? 'bg-accent text-white hover:bg-[#6468d6]'
     : 'border border-line bg-white/[0.04] text-text hover:bg-white/[0.08]'
   const circle = primary ? 'bg-bg/10' : 'bg-white/10'
   return (
@@ -57,6 +57,7 @@ function DownloadButton({ className }: { className?: string }) {
 
 const SECTIONS = [
   ['#search', 'Search'],
+  ['#organize', 'Organize'],
   ['#actions', 'Actions'],
   ['#install', 'Install'],
 ] as const
@@ -87,7 +88,7 @@ function Nav() {
           <GitHubIcon />
           <span className="sr-only">GitHub repository</span>
         </a>
-        <a href={DOWNLOAD} className={`hidden items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-bg transition-[transform,background-color] ${glide} hover:bg-[#4ade9f] active:scale-[0.98] sm:flex`}>
+        <a href={DOWNLOAD} className={`hidden items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition-[transform,background-color] ${glide} hover:bg-[#6468d6] active:scale-[0.98] sm:flex`}>
           <AppleIcon />
           <span className="hidden md:inline">Download for macOS</span>
           <span className="sr-only md:hidden">Download for macOS</span>
@@ -136,16 +137,49 @@ function Nav() {
   )
 }
 
+function DemoVideo() {
+  const ref = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = ref.current
+    if (!video || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        video.play().catch(() => {})
+        observer.disconnect()
+      },
+      { threshold: 0.5 },
+    )
+    observer.observe(video)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <video
+      ref={ref}
+      className="block aspect-video w-full bg-bg"
+      src={asset('demo.mp4')}
+      poster={asset('demo-poster.jpg')}
+      muted
+      playsInline
+      controls
+      preload="metadata"
+      aria-label="One minute demo of Session Deck searching and resuming sessions"
+    />
+  )
+}
+
 function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden pt-36 pb-24 sm:pt-48 sm:pb-32">
-      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[38rem] -z-10 h-[36rem] w-[60rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(52,211,153,.14),transparent)]" />
+    <section id="top" className="relative overflow-x-clip pt-36 pb-16 sm:pt-48 sm:pb-20">
+      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[38rem] -z-10 h-[36rem] w-[60rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(87,91,199,.14),transparent)]" />
       <motion.div className="mx-auto max-w-6xl px-4 text-center sm:px-6" initial="hidden" animate="shown" variants={stagger}>
         <motion.h1 variants={rise} className="mx-auto max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-tighter sm:text-7xl">
-          Find, inspect and resume your Claude Code sessions.
+          Find, inspect and organize your Claude Code sessions.
         </motion.h1>
         <motion.p variants={rise} className="mx-auto mt-8 max-w-2xl text-balance text-lg leading-relaxed text-muted sm:text-xl">
-          Session Deck reads <code className="font-mono text-base text-text">~/.claude</code> and puts every session one keystroke away. Search by the files they changed, the PRs they opened and the plans they left behind, then pick one up in your terminal.
+          Managing sessions and context windows is now a core part of the engineering workflow. Session Deck keeps every session one keystroke away. Search by the files they changed, the PRs they opened and the plans they left behind, then pick up right where you stopped.
         </motion.p>
         <motion.div variants={rise} className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <DownloadButton />
@@ -165,20 +199,9 @@ function Hero() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.1, delay: 0.5, ease }}
       >
-        <div className={`${shell} p-2 shadow-[0_60px_160px_-60px_rgba(52,211,153,.35)]`}>
+        <div className={`${shell} p-2 shadow-[0_60px_160px_-60px_rgba(87,91,199,.35)]`}>
           <div className="overflow-hidden rounded-[calc(2rem-0.5rem)] bg-surface shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-            <video
-              className="block aspect-video w-full bg-bg"
-              src={asset('demo.mp4')}
-              poster={asset('demo-poster.jpg')}
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls
-              preload="metadata"
-              aria-label="One minute demo of Session Deck searching and resuming sessions"
-            />
+            <DemoVideo />
           </div>
         </div>
       </motion.div>
@@ -188,8 +211,8 @@ function Hero() {
 
 function Why() {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
-      <div className="grid gap-10 md:grid-cols-[1fr_1.4fr] md:gap-20">
+    <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+      <div className="grid gap-10 md:grid-cols-[1fr_1.4fr] md:gap-16">
         <Reveal>
           <h2 className="text-balance text-3xl font-semibold tracking-tighter sm:text-5xl">Hundreds of sessions, named after their first prompt.</h2>
         </Reveal>
@@ -241,8 +264,8 @@ function Search() {
           return (
             <motion.li key={k.prefix} variants={rise} className={`${shell} ${BENTO[i]}`}>
               <div className={`${core} relative flex h-full flex-col overflow-hidden ${feature ? 'p-8 sm:p-10' : 'p-6'}`}>
-                {feature && <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(52,211,153,.16),transparent)]" />}
-                <span className="inline-flex w-fit items-center rounded-full border border-line bg-white/[0.04] px-3 py-1 font-mono text-xs text-accent">
+                {feature && <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(87,91,199,.16),transparent)]" />}
+                <span className="inline-flex w-fit items-center rounded-full border border-line bg-white/[0.04] px-3 py-1 font-mono text-xs text-accent-soft">
                   {k.prefix}
                 </span>
                 <h3 className={`mt-5 font-semibold tracking-tight ${feature ? 'text-2xl sm:text-3xl' : 'text-base'}`}>{k.title}</h3>
@@ -257,6 +280,136 @@ function Search() {
   )
 }
 
+const LABEL_COLORS = {
+  Bug: '#eb5757',
+  Feature: '#bb87fc',
+  Investigation: '#4ea7fc',
+  Refactor: '#f2c94c',
+  Performance: '#f2994a',
+  Docs: '#4cb782',
+} as const
+
+const SIDEBAR_VIEWS = [['All sessions', '10'], ['Archived', '2'], ['Needs you', '1']] as const
+const SIDEBAR_REPOS = [['meetnotes', '4'], ['audio-sync', '1'], ['team8', '2']] as const
+const SIDEBAR_FOLDERS = [['~/code', '3']] as const
+const SIDEBAR_LABELS = [['Bug', '1'], ['Feature', '2'], ['Investigation', '0'], ['Refactor', '0'], ['Performance', '2'], ['Docs', '1']] as const
+
+const MOCK_SESSIONS: { title: string; where: string; when: string; labels: (keyof typeof LABEL_COLORS)[] }[] = [
+  { title: 'meetnotes-improvements', where: 'meetnotes · ~/code', when: '3d', labels: ['Performance'] },
+  { title: 'team8-performance', where: 'team8 · ~/code', when: '3d', labels: ['Bug', 'Performance'] },
+  { title: 'blog-post-veracity', where: '~/code · 1 fork', when: '3d', labels: ['Docs'] },
+  { title: 'transcriptions', where: 'meetnotes · ~/code', when: '5d', labels: ['Feature'] },
+]
+
+const sidebarRow = 'flex items-center justify-between rounded-full px-3 py-1.5'
+const sidebarHeading = 'mb-1 mt-4 px-3 text-xs text-dim'
+
+function Dot({ color }: { color: string }) {
+  return <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+}
+
+function SidebarList({ rows, dots }: { rows: readonly (readonly [string, string])[]; dots?: boolean }) {
+  return (
+    <ul className="space-y-0.5 text-sm text-muted">
+      {rows.map(([name, count]) => (
+        <li key={name} className={sidebarRow}>
+          <span className="flex items-center gap-2.5">
+            {dots && <Dot color={LABEL_COLORS[name as keyof typeof LABEL_COLORS]} />}
+            {name}
+          </span>
+          <span className="font-mono text-xs text-dim">{count}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function OrganizeMock() {
+  return (
+    <div aria-hidden="true" className={`${core} grid overflow-hidden md:grid-cols-[14rem_1fr]`}>
+      <div className="border-b border-line p-4 md:border-b-0 md:border-r">
+        <ul className="space-y-0.5 text-sm">
+          {SIDEBAR_VIEWS.map(([name, count], i) => (
+            <li key={name} className={`${sidebarRow} ${i === 0 ? 'bg-accent/20 text-text' : 'text-muted'}`}>
+              <span>{name}</span>
+              <span className="font-mono text-xs text-dim">{count}</span>
+            </li>
+          ))}
+        </ul>
+        <p className={sidebarHeading}>Repositories</p>
+        <SidebarList rows={SIDEBAR_REPOS} />
+        <p className={sidebarHeading}>Folders</p>
+        <SidebarList rows={SIDEBAR_FOLDERS} />
+        <div className={`${sidebarHeading} flex items-center justify-between`}>
+          <span>Labels</span>
+          <span className="text-base leading-none">+</span>
+        </div>
+        <SidebarList rows={SIDEBAR_LABELS} dots />
+      </div>
+      <ul className="divide-y divide-line self-start">
+        {MOCK_SESSIONS.map((s) => (
+          <li key={s.title} className="flex items-start justify-between gap-4 px-5 py-4 sm:px-6">
+            <div className="min-w-0">
+              <p className="truncate font-medium">{s.title}</p>
+              <p className="mt-1 truncate text-sm text-muted">{s.where}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 pt-1.5 text-sm text-dim">
+              {s.labels.map((l) => <Dot key={l} color={LABEL_COLORS[l]} />)}
+              <span>{s.when}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+const code = 'whitespace-nowrap font-mono text-[0.85em] text-text'
+
+const ORGANIZE: [string, ReactNode][] = [
+  ['Labels', 'Bug, Feature, Investigation, Refactor, Performance and Docs come ready to use. Type a new name to add your own, and it gets a color of its own. A session can carry several, shown as dots on its row.'],
+  ['Sidebar', 'Every label is listed with its count, under your repositories and folders, beside All sessions, Archived and Needs you.'],
+  ['Rename', <>Type a new title and press <kbd>↵</kbd>. It’s saved in the transcript as a <code className={code}>custom-title</code> record, the same one Claude Code writes, so the name shows up there too.</>],
+  ['Archive', <>Moves a session out of the lists and search. Nothing is deleted, <code className={code}>claude --resume</code> keeps working, and the toast has an Undo.</>],
+]
+
+function Organize() {
+  return (
+    <section id="organize" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+      <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
+        <div>
+          <Reveal>
+            <h2 className="text-balance text-3xl font-semibold tracking-tighter sm:text-5xl">Label the work. Name the sessions. Archive the rest.</h2>
+            <p className="mt-6 text-lg leading-relaxed text-muted">
+              Sessions start out named after their first prompt. Color-code them by the kind of work, give the ones that matter a real name, and archive the ones you’re done with.
+            </p>
+          </Reveal>
+          <motion.dl
+            className="mt-10 space-y-6"
+            initial="hidden"
+            whileInView="shown"
+            viewport={{ once: true, margin: '0px 0px -80px 0px' }}
+            variants={stagger}
+          >
+            {ORGANIZE.map(([title, body]) => (
+              <motion.div key={title} variants={rise} className="flex gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent shadow-[0_0_12px_rgba(87,91,199,.8)]" aria-hidden="true" />
+                <div>
+                  <dt className="font-semibold">{title}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-muted">{body}</dd>
+                </div>
+              </motion.div>
+            ))}
+          </motion.dl>
+        </div>
+        <Reveal delay={0.1} className={shell}>
+          <OrganizeMock />
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
 function Actions() {
   return (
     <section id="actions" className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
@@ -265,7 +418,7 @@ function Actions() {
           <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr] lg:gap-20">
             <div>
               <h2 className="text-balance text-3xl font-semibold tracking-tighter sm:text-5xl">
-                Type <span className="font-mono text-accent">&gt;</span> and act on the session without touching the mouse.
+                Type <span className="font-mono text-accent-soft">&gt;</span> and act on the session without touching the mouse.
               </h2>
               <p className="mt-6 text-lg leading-relaxed text-muted">
                 Resume opens it in your terminal, in the right folder. Fork keeps the original intact. Everything else is one keystroke behind it.
@@ -281,7 +434,7 @@ function Actions() {
             >
               {ACTIONS.map(([name, what]) => (
                 <motion.li key={name} variants={rise} className="flex gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent shadow-[0_0_12px_rgba(52,211,153,.8)]" aria-hidden="true" />
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent shadow-[0_0_12px_rgba(87,91,199,.8)]" aria-hidden="true" />
                   <div>
                     <p className="font-semibold">{name}</p>
                     <p className="mt-1 text-sm text-muted">{what}</p>
@@ -351,7 +504,7 @@ function Footer() {
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <a href="#top" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-bg">
+      <a href="#top" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-white">
         Skip to content
       </a>
       <Nav />
@@ -359,6 +512,7 @@ export default function App() {
         <Hero />
         <Why />
         <Search />
+        <Organize />
         <Actions />
         <Install />
       </main>
